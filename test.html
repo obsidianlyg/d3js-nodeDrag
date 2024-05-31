@@ -193,7 +193,6 @@
                 const coords = d3.pointer(event);
                 const id = getUuid();
                 const name = `Node${nodes.length + 1}`;
-                // const type = nodes.length % 3 === 0 ? 'tower' : (nodes.length % 3 === 1 ? 'station' : 'gateway');
                 const type = nodeType;
                 nodes.push({ id, name, type, x: coords[0], y: coords[1] });
                 update();
@@ -226,7 +225,10 @@
                 dragLine.attr("x2", event.x)
                         .attr("y2", event.y);
             }
-            if (!isAddingNode && !isAddingLink && !isDeletingNode && !isDeletingLink && !allDrag) {
+            if (!isAddingNode && !isAddingLink && !isDeletingNode && !isDeletingLink) {
+                const dx = event.dx;
+                const dy = event.dy;
+                // 更新节点拖动位置
                 d.x = event.x;
                 d.y = event.y;
 
@@ -234,36 +236,18 @@
                     .attr("x", d.x - iconSize / 2)
                     .attr("y", d.y - iconSize / 2);
 
+                // 如果是整体拖动执行如下命令
+                if(allDrag) {
+                    const visitedNodes = new Set();
+                    updateConnectedNodes(d, dx, dy, visitedNodes);
+
+                }
                 // 更新连线的位置
                 svg.selectAll(".line")
                     .attr("x1", l => nodes.find(n => n.id === l.source).x)
                     .attr("y1", l => nodes.find(n => n.id === l.source).y)
                     .attr("x2", l => nodes.find(n => n.id === l.target).x)
                     .attr("y2", l => nodes.find(n => n.id === l.target).y);
-            }
-            if (allDrag) {
-                const dx = event.dx;
-                const dy = event.dy;
-
-                // 更新被拖动节点的位置
-                d.x += dx;
-                d.y += dy;
-
-                d3.select(this)
-                    .attr("x", d.x - iconSize / 2)
-                    .attr("y", d.y - iconSize / 2);
-
-                // 递归更新与当前节点相连的所有节点和连线的位置
-                const visitedNodes = new Set();
-                updateConnectedNodes(d, dx, dy, visitedNodes);
-
-                // 更新所有连线的位置
-                svg.selectAll(".line")
-                    .attr("x1", l => nodes.find(n => n.id === l.source).x)
-                    .attr("y1", l => nodes.find(n => n.id === l.source).y)
-                    .attr("x2", l => nodes.find(n => n.id === l.target).x)
-                    .attr("y2", l => nodes.find(n => n.id === l.target).y);
-
                 // 更新所有节点的位置
                 svg.selectAll(".node")
                     .attr("x", n => n.x - iconSize / 2)
@@ -314,13 +298,10 @@
             });
         }
 
+        // 针对节点类型进行线段颜色区分的方法，暂时不做区分
         function determineLinkColor(sourceNode, targetNode) {
             if (sourceNode.type === 'pole' && targetNode.type === 'pole') {
-                return '#1e90ff';
-            } else if (sourceNode.type === 'station' && targetNode.type === 'station') {
-                return 'green';
-            } else if (sourceNode.type === 'gateway' && targetNode.type === 'gateway') {
-                return 'blue';
+                return '#7f8c8d';
             } else {
                 return '#7f8c8d';
             }
