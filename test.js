@@ -2,8 +2,8 @@ var jsonData = {
     "nodes": [
         {
             "id": "ec61a8f4-73ec-46fe-adb2-4473119a006c",
-            "name": "init",
-            "type": "init",
+            "name": "specializedTransformation",
+            "type": "specializedTransformation",
             "x": 192,
             "y": 175.7142791748047,
             "objId": "99640b9f-ed00-4059-a545-08c0ce851de0"

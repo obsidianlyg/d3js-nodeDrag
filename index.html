@@ -50,6 +50,8 @@
         <button onclick="addNodeButton('pole')">新增节点</button>
         <button onclick="addNodeButton('meterBox')">新增表箱</button>
         <button onclick="addNodeButton('switch')">新增开关</button>
+        <button onclick="addNodeButton('publicTransformation')">新增公变</button>
+        <button onclick="addNodeButton('specializedTransformation')">新增专变</button>
         <button id="addLinkButton">连线</button>
         <button id="deleteNodeButton">删除节点</button>
         <button id="deleteLinkButton">删除连线</button>
@@ -58,7 +60,7 @@
         <button onclick="selectAllButton()">整体拖动</button>
         <!-- <input type="color" id="colorPicker"> -->
         <select id="colorPicker">
-            <option value="black" style="background-color: black; color: white;">黑色</option>
+            <option value="#7f8c8d" style="background-color: #7f8c8d; color: white;">灰色</option>
             <option value="red" style="background-color: red; color: white;">红色</option>
             <option value="green" style="background-color: green; color: white;">绿色</option>
             <option value="blue" style="background-color: blue; color: white;">蓝色</option>
@@ -157,6 +159,8 @@
                     if (d.type === 'meterBox') return './meterBox.png';
                     if (d.type === 'switch') return './switch.png';
                     if (d.type === 'init') return './init.png';
+                    if (d.type === 'publicTransformation') return './publicTransformation.png';
+                    if (d.type === 'specializedTransformation') return './specializedTransformation.png';
                 })
                 .merge(node)
                 .attr("x", d => d.x - iconSize / 2)
