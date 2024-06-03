@@ -82,8 +82,19 @@
     </svg>
     <script src="test.js"></script>
     <script>
-   
-        const svg = d3.select("svg");
+        // 缩放行为
+        const zoom = d3.zoom()
+            .scaleExtent([0.5, 5]) // 设置缩放范围
+            .on("zoom", zoomed);
+        function zoomed(event) {
+            if (allDrag) {
+                svg.attr("transform", event.transform);
+            }
+        }
+        // 创建svg元素
+        const svgContainer = d3.select("svg")
+                .call(zoom);
+        const svg = svgContainer.append("g");
         // let nodes = [];
         // let links = [];
         let links = [];
@@ -110,7 +121,7 @@
         let allDrag = false;
         
         const iconSize = 20;
-
+        
         // 绘制节点和连线
         function update() {
             // 绘制连线
@@ -199,10 +210,11 @@
             label.exit().remove();
         }
 
-        // 添加新节点
-        svg.on("click", function(event) {
-            if (isAddingNode) {
-                const coords = d3.pointer(event);
+        // 添加新节点-缩放行为加入后svg改为
+        svgContainer.on("click", function(event) {
+            if (isAddingNode) { 
+                const transform = d3.zoomTransform(svgContainer.node());               
+                const coords = transform.invert(d3.pointer(event, this));
                 const id = getUuid();
                 const name = `Node${nodes.length + 1}`;
                 const type = nodeType;
