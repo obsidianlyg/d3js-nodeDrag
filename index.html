@@ -57,15 +57,14 @@
         <button id="deleteLinkButton">删除连线</button>
         <button onclick="logNodeButton()">打印节点</button>
         <button onclick="selectButton()">选择节点</button>
-        <button onclick="selectAllButton()">整体拖动</button>
+        <button onclick="selectAllButton()">整体拖动/缩放</button>
         <!-- <input type="color" id="colorPicker"> -->
         <select id="colorPicker">
             <option value="#7f8c8d" style="background-color: #7f8c8d; color: white;">灰色</option>
-            <option value="red" style="background-color: red; color: white;">红色</option>
-            <option value="green" style="background-color: green; color: white;">绿色</option>
-            <option value="blue" style="background-color: blue; color: white;">蓝色</option>
-            <option value="purple" style="background-color: purple; color: white;">紫色</option>
-            <option value="orange" style="background-color: orange; color: white;">橙色</option>
+            <option value="#ff4757" style="background-color: #ff4757; color: white;">红色</option>
+            <option value="#2ed573" style="background-color: #2ed573; color: white;">绿色</option>
+            <option value="#1e90ff" style="background-color: #1e90ff; color: white;">蓝色</option>
+            <option value="#ffa502" style="background-color: #ffa502; color: white;">橙色</option>
         </select>
         <button onclick="updateColor()">
             更新颜色
@@ -121,7 +120,18 @@
         let allDrag = false;
         
         const iconSize = 20;
-        
+
+        // 按钮事件的初始化
+        function init() {
+            isAddingNode = false;
+            isAddingLink = false;
+            isDeletingNode = false;
+            isDeletingLink = false;
+            allDrag = false;
+            const colorPicker = document.getElementById("colorPicker");
+            colorPicker.style.display = 'none';
+        }
+
         // 绘制节点和连线
         function update() {
             // 绘制连线
@@ -332,43 +342,28 @@
         }
         // 按钮事件处理
         function addNodeButton(type) {
+            init();
             nodeType = type;
             isAddingNode = true;
-            isAddingLink = false;
-            isDeletingNode = false;
-            isDeletingLink = false;
-            allDrag = false;
         };
 
         d3.select("#addLinkButton").on("click", function() {
+            init();
             isAddingLink = true;
-            isAddingNode = false;
-            isDeletingNode = false;
-            isDeletingLink = false;
-            allDrag = false;
         });
 
         d3.select("#deleteNodeButton").on("click", function() {
+            init();
             isDeletingNode = true;
-            isAddingNode = false;
-            isAddingLink = false;
-            isDeletingLink = false;
-            allDrag = false;
         });
 
         d3.select("#deleteLinkButton").on("click", function() {
+            init();
             isDeletingLink = true;
-            isAddingNode = false;
-            isAddingLink = false;
-            isDeletingNode = false;
-            allDrag = false;
         });
         // 整体拖动
         function selectAllButton() {
-            isDeletingLink = false;
-            isAddingNode = false;
-            isAddingLink = false;
-            isDeletingNode = false;
+            init();
             allDrag = true;
         }
 
@@ -381,6 +376,10 @@
             console.log("Deleting link:", isDeletingLink);
             console.log("Nodes:", nodes);
             console.log("Links:", links);
+        }
+
+        function selectButton() {
+            init();
         }
     
         function getUuid () {
@@ -410,13 +409,6 @@
               return (c === 'x' ? random : (random & 0x3) | 0x8).toString(16);
             });
         };
-        function selectButton() {
-            isDeletingLink = false;
-            isAddingNode = false;
-            isAddingLink = false;
-            isDeletingNode = false;
-            allDrag = false;
-        }
          
         /**
          * 更新指定线段的stroke属性
