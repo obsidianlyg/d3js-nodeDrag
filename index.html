@@ -59,16 +59,16 @@
         <button onclick="selectButton()">选择节点</button>
         <button onclick="selectAllButton()">整体拖动/缩放</button>
         <!-- <input type="color" id="colorPicker"> -->
-        <select id="colorPicker">
+        <select id="colorPicker" class="selectColor" onchange="updateColor()">
             <option value="#7f8c8d" style="background-color: #7f8c8d; color: white;">灰色</option>
             <option value="#ff4757" style="background-color: #ff4757; color: white;">红色</option>
             <option value="#2ed573" style="background-color: #2ed573; color: white;">绿色</option>
             <option value="#1e90ff" style="background-color: #1e90ff; color: white;">蓝色</option>
             <option value="#ffa502" style="background-color: #ffa502; color: white;">橙色</option>
         </select>
-        <button onclick="updateColor()">
+        <!-- <button onclick="updateColor()">
             更新颜色
-        </button>
+        </button> -->
     </div>
     </div>
     <svg width="800" height="600">
