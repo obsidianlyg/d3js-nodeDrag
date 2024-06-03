@@ -47,11 +47,13 @@
 </head>
 <body>
     <div class="button-container">
-        <button onclick="addNodeButton('pole')">新增节点</button>
+        <button onclick="addNodeButton('meter')">新增节点</button>
+        <button onclick="addNodeButton('pole')">新增杆塔</button>
         <button onclick="addNodeButton('meterBox')">新增表箱</button>
         <button onclick="addNodeButton('switch')">新增开关</button>
         <button onclick="addNodeButton('publicTransformation')">新增公变</button>
         <button onclick="addNodeButton('specializedTransformation')">新增专变</button>
+        <button onclick="addNodeButton('transformerSubstation')">新增变电站</button>
         <button id="addLinkButton">连线</button>
         <button id="deleteNodeButton">删除节点</button>
         <button id="deleteLinkButton">删除连线</button>
@@ -59,7 +61,7 @@
         <button onclick="selectButton()">选择节点</button>
         <button onclick="selectAllButton()">整体拖动/缩放</button>
         <!-- <input type="color" id="colorPicker"> -->
-        <select id="colorPicker" class="selectColor" onchange="updateColor()">
+        <select id="colorPicker" class="selectColor">
             <option value="#7f8c8d" style="background-color: #7f8c8d; color: white;">灰色</option>
             <option value="#ff4757" style="background-color: #ff4757; color: white;">红色</option>
             <option value="#2ed573" style="background-color: #2ed573; color: white;">绿色</option>
@@ -71,7 +73,7 @@
         </button> -->
     </div>
     </div>
-    <svg width="800" height="600">
+    <svg width="1000" height="760">
         <defs>
             <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
                 <path d="M 20 0 L 0 0 0 20" fill="none" stroke="gray" stroke-width="0.5"/>
@@ -153,13 +155,18 @@
                         links = links.filter(link => link !== d);
                         update();
                         // isDeletingLink = false;
-                    } else{
+                    } else {
                         selectedLink = d;
                         const colorPicker = document.getElementById("colorPicker");
                         colorPicker.style.display = "block";
                         colorPicker.style.left = `${event.pageX}px`;
                         colorPicker.style.top = `${event.pageY}px`;
                         colorPicker.value = d.color || "#000000";
+                        colorPicker.style.backgroundColor = d.color || "#000000";
+                        colorPicker.addEventListener("change", function() {
+                            // 也可以在select标签中写onchange="updateColor()"
+                            updateColor();
+                        })
                         colorPicker.focus();
                     }
                 });
@@ -176,12 +183,14 @@
                 .attr("width", iconSize)
                 .attr("height", iconSize)
                 .attr("xlink:href", d => {
+                    if (d.type === 'meter') return './meter.png';
                     if (d.type === 'pole') return './pole.png';
                     if (d.type === 'meterBox') return './meterBox.png';
                     if (d.type === 'switch') return './switch.png';
                     if (d.type === 'init') return './init.png';
                     if (d.type === 'publicTransformation') return './publicTransformation.png';
                     if (d.type === 'specializedTransformation') return './specializedTransformation.png';
+                    if (d.type === 'transformerSubstation') return './transformerSubstation.png';
                 })
                 .merge(node)
                 .attr("x", d => d.x - iconSize / 2)
@@ -214,8 +223,7 @@
                 .merge(label)
                 .attr("x", d => d.x)
                 .attr("y", d => d.y - iconSize/2 - 5)
-                // .text(d => d.name);
-                // .text(d => d.type);
+                .text(d => d.name);
 
             label.exit().remove();
         }
@@ -286,6 +294,10 @@
                 svg.selectAll(".node")
                     .attr("x", n => n.x - iconSize / 2)
                     .attr("y", n => n.y - iconSize / 2);
+                // 更新对应label的位置
+                svg.selectAll(".label")
+                    .attr("x", n => n.x)
+                    .attr("y", n => n.y - iconSize / 2 - 5);
             }
         }
 
