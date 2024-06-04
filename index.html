@@ -6,26 +6,6 @@
     <title>Interactive Line Loss Diagram with D3.js</title>
     <script src="d3.v6.min.js"></script>    
     <style>
-        .pole {
-            fill: orange;
-            stroke: black;
-            stroke-width: 1px;
-        }
-        .meterBox {
-            fill: green;
-            stroke: black;
-            stroke-width: 1px;
-        }
-        .gateway {
-            fill: blue;
-            stroke: black;
-            stroke-width: 1px;
-        }
-        .switch {
-            fill: gray;
-            stroke: black;
-            stroke-width: 1px;
-        }
         .line {
             stroke-width: 2px;
         }
@@ -43,6 +23,18 @@
             display: none;
             position: absolute;
         }
+        .line.highlight {
+            stroke: rgb(255, 0, 0);
+            stroke-width: 4px;
+        }
+        .node.highlight {
+            width: 20px;
+            height: 20px;
+            /* opacity: 0.5; */
+            stroke: rgb(219, 80, 80);
+            stroke-width: 2px;
+            /* border: 1px solid rgb(206, 25, 25); */
+        }
     </style>
 </head>
 <body>
@@ -59,7 +51,7 @@
         <button id="deleteLinkButton">删除连线</button>
         <button onclick="logNodeButton()">打印节点</button>
         <button onclick="selectButton()">选择节点</button>
-        <button onclick="selectAllButton()">整体拖动/缩放</button>
+        <button onclick="selectAllButton()">整体拖动/缩放</button>  
         <!-- <input type="color" id="colorPicker"> -->
         <select id="colorPicker" class="selectColor">
             <option value="#7f8c8d" style="background-color: #7f8c8d; color: white;">灰色</option>
@@ -68,9 +60,6 @@
             <option value="#1e90ff" style="background-color: #1e90ff; color: white;">蓝色</option>
             <option value="#ffa502" style="background-color: #ffa502; color: white;">橙色</option>
         </select>
-        <!-- <button onclick="updateColor()">
-            更新颜色
-        </button> -->
     </div>
     </div>
     <svg width="1000" height="760">
@@ -100,7 +89,7 @@
         // let links = [];
         let links = [];
         let nodes = [{
-            "id": "ec61a8f4-73ec-46fe-adb2-4473119a006c",
+            "objId": "ec61a8f4-73ec-46fe-adb2-4473119a006c",
             "name": "init",
             "type": "init",
             "x": 119.99999237060547,
@@ -132,6 +121,9 @@
             allDrag = false;
             const colorPicker = document.getElementById("colorPicker");
             colorPicker.style.display = 'none';
+            // 移除所有节点和线段的高亮
+            d3.selectAll(".node").classed("highlight", false);
+            d3.selectAll(".line").classed("highlight", false); 
         }
 
         // 绘制节点和连线
@@ -146,16 +138,22 @@
                 .attr("stroke", d => d.color)
                 .attr("id", d => d.objId)
                 .merge(line)
-                .attr("x1", d => nodes.find(n => n.id === d.source).x)
-                .attr("y1", d => nodes.find(n => n.id === d.source).y)
-                .attr("x2", d => nodes.find(n => n.id === d.target).x)
-                .attr("y2", d => nodes.find(n => n.id === d.target).y)
+                .attr("x1", d => nodes.find(n => n.objId === d.source).x)
+                .attr("y1", d => nodes.find(n => n.objId === d.source).y)
+                .attr("x2", d => nodes.find(n => n.objId === d.target).x)
+                .attr("y2", d => nodes.find(n => n.objId === d.target).y)
                 .on("click", function(event, d) {
                     if (isDeletingLink) {
                         links = links.filter(link => link !== d);
                         update();
-                        // isDeletingLink = false;
                     } else {
+                        // 高亮显示线段
+                        // 移除所有线段和节点的高亮
+                        d3.selectAll(".node").classed("highlight", false);
+                        d3.selectAll(".line").classed("highlight", false); 
+                        // 高亮当前线段
+                        d3.select(this).classed("highlight", true); 
+
                         selectedLink = d;
                         const colorPicker = document.getElementById("colorPicker");
                         colorPicker.style.display = "block";
@@ -164,7 +162,7 @@
                         colorPicker.value = d.color || "#000000";
                         colorPicker.style.backgroundColor = d.color || "#000000";
                         colorPicker.addEventListener("change", function() {
-                            // 也可以在select标签中写onchange="updateColor()"
+                            d3.selectAll(".line").classed("highlight", false);
                             updateColor();
                         })
                         colorPicker.focus();
@@ -175,10 +173,20 @@
 
             // 绘制节点
             const node = svg.selectAll(".node")
-                .data(nodes, d => d.id);
+                .data(nodes, d => d.objId);
 
-            node.enter()
-                .append("image")
+            // const nodeEnter = node.enter()
+            //                 .append("g")
+            //                 .attr("class", "node");
+            // nodeEnter.append("rect")
+            //     .attr("class", 'node')
+            //     .attr("width", iconSize)
+            //     .attr("height", iconSize)
+            //     .attr("x", d => d.x - iconSize / 2)
+            //     .attr("y", d => d.y - iconSize / 2)
+            //     .attr("fill", "none")
+            //     .attr("stroke", "none");
+                node.enter().append("image")
                 .attr("class", d => `node ${d.type}`)
                 .attr("width", iconSize)
                 .attr("height", iconSize)
@@ -202,11 +210,20 @@
                 )
                 .on("click", function(event, d) {
                     if (isDeletingNode) {
-                        links = links.filter(link => link.source !== d.id && link.target !== d.id);
-                        nodes = nodes.filter(node => node !== d);
+                        links = links.filter(link => link.source !== d.objId && link.target !== d.objId);
+                        nodes = nodes.filter(node => node.objId !== d.objId);
                         update();
-                        // isDeletingNode = false;
                     }else{
+                        // 高亮显示节点
+                        // 移除所有节点和线段的高亮
+                        d3.selectAll(".node").classed("highlight", false);
+                        d3.selectAll(".line").classed("highlight", false); 
+                        // 高亮当前节点 
+                        d3.select(this).classed("highlight", true);
+                        // d3.select(this.parentNode).select("rect").classed("highlight", true);
+                        // 下方为高亮相连接的线段
+                        // d3.selectAll(".line").filter(link => link.source === d.objId || link.target === d.objId).classed("highlight", true);
+                        // 显示节点详情
                         console.log("点击了节点", d.name);
                     }
                 });
@@ -215,7 +232,7 @@
 
             // 添加标签
             const label = svg.selectAll(".label")
-                .data(nodes, d => d.id);
+                .data(nodes, d => d.objId);
 
             label.enter()
                 .append("text")
@@ -233,20 +250,19 @@
             if (isAddingNode) { 
                 const transform = d3.zoomTransform(svgContainer.node());               
                 const coords = transform.invert(d3.pointer(event, this));
-                const id = getUuid();
+                const objId = getUuid();
                 const name = `Node${nodes.length + 1}`;
                 const type = nodeType;
-                nodes.push({ id, name, type, x: coords[0], y: coords[1] });
+                nodes.push({ objId, name, type, x: coords[0], y: coords[1] });
                 update();
-                // isAddingNode = false; // Reset the flag
             }
         });
         // 拖动行为
         function dragstarted(event, d) {
             if (isAddingLink) {
                 sourceNode = d;
-                let id = getUuid();        
-                sourceNode.objId = id;
+                let objId = getUuid();        
+                sourceNode.objId = objId;
                 dragLine = svg.append("line")
                     .attr("class", "dragLine")
                     .attr("stroke", "gray")
@@ -255,7 +271,7 @@
                     .attr("y1", d.y)
                     .attr("x2", d.x)
                     .attr("y2", d.y)
-                    .attr("id", id);
+                    .attr("id", objId);
             } 
             if (!isAddingNode && !isAddingLink && !isDeletingNode && !isDeletingLink) {
                 d3.select(this).raise().classed("active", true);
@@ -286,10 +302,10 @@
                 }
                 // 更新连线的位置
                 svg.selectAll(".line")
-                    .attr("x1", l => nodes.find(n => n.id === l.source).x)
-                    .attr("y1", l => nodes.find(n => n.id === l.source).y)
-                    .attr("x2", l => nodes.find(n => n.id === l.target).x)
-                    .attr("y2", l => nodes.find(n => n.id === l.target).y);
+                    .attr("x1", l => nodes.find(n => n.objId === l.source).x)
+                    .attr("y1", l => nodes.find(n => n.objId === l.source).y)
+                    .attr("x2", l => nodes.find(n => n.objId === l.target).x)
+                    .attr("y2", l => nodes.find(n => n.objId === l.target).y);
                 // 更新所有节点的位置
                 svg.selectAll(".node")
                     .attr("x", n => n.x - iconSize / 2)
@@ -308,7 +324,7 @@
                 const targetNode = nodes.find(n => Math.hypot(n.x - event.x, n.y - event.y) < 10);
                 if (targetNode && targetNode !== sourceNode) {
                     const color = determineLinkColor(sourceNode, targetNode);
-                    links.push({objId:sourceNode.id, source: sourceNode.id, target: targetNode.id, color: color });
+                    links.push({objId:getUuid(), source: sourceNode.objId, target: targetNode.objId, color: color });
                     update();
                 }
                 sourceNode = null;
@@ -327,16 +343,16 @@
          * @param {Set} visitedNodes - 已访问的节点集合
          */
         function updateConnectedNodes(node, dx, dy, visitedNodes) {
-            visitedNodes.add(node.id);
+            visitedNodes.add(node.objId);
 
             links.forEach(link => {
-                if (link.source === node.id && !visitedNodes.has(link.target)) {
-                    const targetNode = nodes.find(n => n.id === link.target);
+                if (link.source === node.objId && !visitedNodes.has(link.target)) {
+                    const targetNode = nodes.find(n => n.objId === link.target);
                     targetNode.x += dx;
                     targetNode.y += dy;
                     updateConnectedNodes(targetNode, dx, dy, visitedNodes);
-                } else if (link.target === node.id && !visitedNodes.has(link.source)) {
-                    const sourceNode = nodes.find(n => n.id === link.source);
+                } else if (link.target === node.objId && !visitedNodes.has(link.source)) {
+                    const sourceNode = nodes.find(n => n.objId === link.source);
                     sourceNode.x += dx;
                     sourceNode.y += dy;
                     updateConnectedNodes(sourceNode, dx, dy, visitedNodes);
