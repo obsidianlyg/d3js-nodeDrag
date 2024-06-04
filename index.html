@@ -35,6 +35,10 @@
             stroke-width: 2px;
             /* border: 1px solid rgb(206, 25, 25); */
         }
+        .label.highlight {
+            fill: red;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -149,8 +153,9 @@
                     } else {
                         // 高亮显示线段
                         // 移除所有线段和节点的高亮
-                        d3.selectAll(".node").classed("highlight", false);
+                        d3.selectAll(".label").classed("highlight", false);
                         d3.selectAll(".line").classed("highlight", false); 
+                        d3.selectAll(".flag").attr("stroke", "none"); 
                         // 高亮当前线段
                         d3.select(this).classed("highlight", true); 
 
@@ -173,20 +178,9 @@
 
             // 绘制节点
             const node = svg.selectAll(".node")
-                .data(nodes, d => d.objId);
+                    .data(nodes, d => d.objId);
 
-            // const nodeEnter = node.enter()
-            //                 .append("g")
-            //                 .attr("class", "node");
-            // nodeEnter.append("rect")
-            //     .attr("class", 'node')
-            //     .attr("width", iconSize)
-            //     .attr("height", iconSize)
-            //     .attr("x", d => d.x - iconSize / 2)
-            //     .attr("y", d => d.y - iconSize / 2)
-            //     .attr("fill", "none")
-            //     .attr("stroke", "none");
-                node.enter().append("image")
+            node.enter().append("image")
                 .attr("class", d => `node ${d.type}`)
                 .attr("width", iconSize)
                 .attr("height", iconSize)
@@ -216,19 +210,35 @@
                     }else{
                         // 高亮显示节点
                         // 移除所有节点和线段的高亮
-                        d3.selectAll(".node").classed("highlight", false);
+                        d3.selectAll(".label").classed("highlight", false);
                         d3.selectAll(".line").classed("highlight", false); 
+                        d3.selectAll(".flag").attr("stroke", "none");
+                        init();
                         // 高亮当前节点 
-                        d3.select(this).classed("highlight", true);
-                        // d3.select(this.parentNode).select("rect").classed("highlight", true);
+                        d3.selectAll(".label").filter(node => node.objId === d.objId).classed("highlight", true);
+                        d3.selectAll(".flag").filter(node => node.objId === d.objId).attr("stroke", "red");
                         // 下方为高亮相连接的线段
                         // d3.selectAll(".line").filter(link => link.source === d.objId || link.target === d.objId).classed("highlight", true);
                         // 显示节点详情
                         console.log("点击了节点", d.name);
+                        console.log("点击了节点", d.x);
+                        console.log("点击了节点", d.y);
                     }
                 });
-
+            
             node.exit().remove();
+            // 绘制标记
+            const flag = svg.selectAll(".flag")
+                .data(nodes, d => d.objId);
+            flag.enter().append("rect")
+                .attr("class", 'flag')
+                .attr("width", iconSize)
+                .attr("height", iconSize)
+                .attr("x", d => d.x - iconSize / 2)
+                .attr("y", d => d.y - iconSize / 2)
+                .attr("fill", "none")
+                .attr("stroke", "none");
+            flag.exit().remove();
 
             // 添加标签
             const label = svg.selectAll(".label")
@@ -262,7 +272,7 @@
             if (isAddingLink) {
                 sourceNode = d;
                 let objId = getUuid();        
-                sourceNode.objId = objId;
+                sourceNode.objId = d.objId;
                 dragLine = svg.append("line")
                     .attr("class", "dragLine")
                     .attr("stroke", "gray")
@@ -314,6 +324,10 @@
                 svg.selectAll(".label")
                     .attr("x", n => n.x)
                     .attr("y", n => n.y - iconSize / 2 - 5);
+                // 更新对应flag的位置
+                svg.selectAll(".flag")
+                    .attr("x", n => n.x - iconSize / 2)
+                    .attr("y", n => n.y - iconSize / 2);
             }
         }
 
