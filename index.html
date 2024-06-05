@@ -24,19 +24,19 @@
             position: absolute;
         }
         .line.highlight {
-            stroke: rgb(255, 0, 0);
+            stroke: #1e90ff;
             stroke-width: 4px;
         }
         .node.highlight {
             width: 20px;
             height: 20px;
             /* opacity: 0.5; */
-            stroke: rgb(219, 80, 80);
+            stroke: #1e90ff;
             stroke-width: 2px;
             /* border: 1px solid rgb(206, 25, 25); */
         }
         .label.highlight {
-            fill: red;
+            fill: #1e90ff;
             font-weight: bold;
         }
     </style>
@@ -216,7 +216,10 @@
                         init();
                         // 高亮当前节点 
                         d3.selectAll(".label").filter(node => node.objId === d.objId).classed("highlight", true);
-                        d3.selectAll(".flag").filter(node => node.objId === d.objId).attr("stroke", "red");
+                        d3.selectAll(".flag")
+                            .filter(node => node.objId === d.objId)
+                            .attr("stroke", "#1e90ff")
+                            .attr("stroke-width", 4);
                         // 下方为高亮相连接的线段
                         // d3.selectAll(".line").filter(link => link.source === d.objId || link.target === d.objId).classed("highlight", true);
                         // 显示节点详情
